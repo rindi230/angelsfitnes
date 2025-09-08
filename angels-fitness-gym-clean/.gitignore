@@ -1,0 +1,15 @@
+node_modules/
+dist/
+src/
+supabase/
+.github/
+.vscode/
+*.json
+*.ts
+*.tsx
+*.js
+*.jsx
+*.css
+*.md
+*.lock
+*.config.*
