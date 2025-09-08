@@ -103,7 +103,7 @@ export const Navbar = ({ scrollY }: NavbarProps) => {
                 className="flex items-center space-x-2"
               >
                 <img
-                  src="/downloads/angels logo.jpg"
+                  src={`${import.meta.env.BASE_URL}downloads/angels logo.jpg`}
                   alt="Angels Fitness"
                   className="h-10 w-10 rounded-full object-cover"
                 />
