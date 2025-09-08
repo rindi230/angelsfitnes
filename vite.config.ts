@@ -9,7 +9,7 @@ const __dirname = dirname(__filename);
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: mode === 'production' ? "/angelsgym/" : "/",
+  base: "/",
   server: {
     host: "::",
     port: 8082,
