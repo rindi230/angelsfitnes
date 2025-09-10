@@ -7,27 +7,27 @@ export const Staff = () => {
   const trainers = [
     {
       name: "Eurola",
-      specialty: "Personal Training & Strength",
+      specialty: "Trajnim Personal & Forcë",
       image: `${import.meta.env.BASE_URL}downloads/eurola.jpg`,
-      bio: "Former competitive athlete with expertise in high-intensity workouts and functional fitness."
+      bio: "Ish-sportiste garuese me ekspertizë në stërvitje me intensitet të lartë dhe fitnes funksional."
     },
     {
       name: "Elton",
       specialty: "CrossFit & HIIT",
       image: `${import.meta.env.BASE_URL}downloads/elton.jpg`,
-      bio: "5+ years experience, certified personal trainer specializing in strength training and body transformation."
+      bio: "Mbi 5 vite eksperiencë, trajner personal i çertifikuar i specializuar në forcë dhe transformim trupor."
     },
     {
       name: "Matilda",
       specialty: "Yoga & Pilates",
       image: `${import.meta.env.BASE_URL}downloads/matilda.jpg`,
-      bio: "Certified yoga instructor with 8 years of experience in mindfulness and flexibility training."
+      bio: "Instruktore yoga e çertifikuar me 8 vite përvojë në trajnime për qetësi mendore dhe fleksibilitet."
     },
     {
       name: "Arber",
-      specialty: "Martial Arts & Karate",
+      specialty: "Arte Marciale & Karate",
       image: `${import.meta.env.BASE_URL}downloads/arber.jpg`,
-      bio: "Black belt instructor with 15 years of martial arts experience and competition background."
+      bio: "Instruktor me rrip të zi dhe 15 vite eksperiencë në arte marciale dhe gara."
     }
   ];
 

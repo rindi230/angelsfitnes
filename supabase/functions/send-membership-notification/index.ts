@@ -1,11 +1,9 @@
-// @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 interface MembershipEmailRequest {
@@ -62,7 +60,6 @@ const handler = async (req: Request): Promise<Response> => {
                 <td style="padding: 8px 0; font-weight: bold; color: #374151;">Customer Email:</td>
                 <td style="padding: 8px 0; color: #6b7280;">${customerEmail}</td>
               </tr>
-
               <tr>
                 <td style="padding: 8px 0; font-weight: bold; color: #374151;">Customer Phone:</td>
                 <td style="padding: 8px 0; color: #6b7280;">${customerPhone}</td>

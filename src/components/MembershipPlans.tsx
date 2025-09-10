@@ -1,126 +1,292 @@
-import React, { useState } from "react";
-import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-import { Crown } from "lucide-react";
+import { Check, Star } from "lucide-react";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from '@/integrations/supabase/client';
 
-const plans = [
-  {
-    name: "3 Dite/Jave",
-    price: "$45/mo",
-    description: "Perfekte per njerezit qe jane fillestare dhe qe kane nje rutine te zene.",
-    features: ["Aksess 3 here ne jave", "Te gjitha mjetet e plaestres te disponueshme", "Raft i personalizuar i disponueshem"],
-  },
-  {
-    name: "4 Dite/jave",
-    price: "$50/mo",
-    description: "E mire per pjestaret e rregullt te cilet duan te jene me fleksibel.",
-    features: ["Aksess 4 dite ne jave", "Te gjitha mjetet e plaestres te disponueshme", "Raft i personalizuar i disponueshem"],
-    popular: true
-  },
-  {
-    name: "5 Dite/jave",
-    price: "$60/mo",
-    description: "Me e mira për entuziastët e fitnesit!",
-    features: ["Aksess 5 dite ne jave", "Te gjitha mjetet e plaestres te disponueshme", "Raft i personalizuar i disponueshem"],
-  },
-];
+const MembershipPlans = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState("");
+  const [selectedPlanPrice, setSelectedPlanPrice] = useState("");
+  const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
-export default function MembershipPlans() {
-  const [open, setOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState(null as null | typeof plans[0]);
-  const { elementRef: titleRef, isVisible: titleVisible } = useScrollAnimation();
-  const { elementRef: plansRef, isVisible: plansVisible } = useScrollAnimation({ threshold: 0.2 });
+  const plans = [
+    {
+      name: "Plani Bazë",
+      price: "29",
+      period: "muaj",
+      description: "I përshtatshëm për fillestarët që duan të nisin rrugëtimin e tyre në fitnes",
+      features: [
+        "Akses në të gjitha pajisjet e palestrës",
+        "Dollap bazë",
+        "Parkim falas",
+        "Monitorim online i stërvitjes"
+      ],
+      popular: false
+    },
+    {
+      name: "Plani Premium",
+      price: "49",
+      period: "muaj",
+      description: "I përshtatshëm për ata që frekuentojnë palestrën rregullisht dhe kërkojnë më shumë përfitime",
+      features: [
+        "Të gjitha përfitimet bazë të përfshira",
+        "Klasa grupore fitnesi",
+        "Konsultim personal me trajner",
+        "Udhëzime ushqimore",
+        "Rezervim me prioritet",
+        "Ftesa për miq"
+      ],
+      popular: true
+    },
+    {
+      name: "Plani Elitë",
+      price: "79",
+      period: "muaj",
+      description: "Për ata që kërkojnë eksperiencë të plotë dhe shërbime shtesë në fitnes",
+      features: [
+        "Të gjitha përfitimet premium të përfshira",
+        "Stërvitje personale pa kufizim",
+        "Terapia me masazh",
+        "Dollap VIP",
+        "Ftesa të pakufizuara për miq",
+        "Plan ushqimor i personalizuar",
+        "Akses 24/7"
+      ],
+      popular: false
+    }
+  ];
 
-  const handleJoin = (plan: typeof plans[0]) => {
-    setSelectedPlan(plan);
-    setOpen(true);
+  const handleGetStarted = (planName: string, planPrice: string) => {
+    setSelectedPlan(planName);
+    setSelectedPlanPrice(planPrice);
+    setIsDialogOpen(true);
+  };
+
+  const sendMembershipEmail = async () => {
+    try {
+      const { error } = await supabase.functions.invoke('send-membership-email', {
+        body: {
+          customerName,
+          customerEmail,
+          customerPhone,
+          planName: selectedPlan,
+          planPrice: selectedPlanPrice,
+        },
+      });
+
+      if (error) {
+        console.error('Error sending membership email:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Error in sendMembershipEmail:', error);
+      throw error;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!customerName.trim() || !customerEmail.trim() || !customerPhone.trim()) {
+      toast({
+        title: "Please fill in all fields",
+        description: "All fields are required to process your membership inquiry.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      await sendMembershipEmail();
+      
+      toast({
+        title: "Inquiry Submitted Successfully!",
+        description: `Thank you ${customerName}! We've received your interest in the ${selectedPlan} plan. Our team will contact you soon.`,
+      });
+      
+      // Reset form
+      setCustomerName("");
+      setCustomerEmail("");
+      setCustomerPhone("");
+      setIsDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit your inquiry. Please try again or contact us directly.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <section className="py-16 bg-gradient-to-b from-white to-gray-100" id="membership">
-      <div className="max-w-5xl mx-auto px-4">
-        <div 
-          ref={titleRef as React.RefObject<HTMLDivElement>}
-          className={`text-center mb-10 transition-all duration-1000 ${
-            titleVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
-        >
-          <h2 className="text-4xl font-bold mb-4">Planet e regjistrimit</h2>
-          <p className="text-gray-600">Zgjidhni planin i cili ju pershtatet me shume</p>
+    <section className="py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">Planet e Anëtarësimit</h2>
+          <p className="text-xl text-gray-600">
+            Zgjidhni planin e përsosur për rrugëtimin tuaj të fitnesit
+          </p>
         </div>
-        <div 
-          ref={plansRef as React.RefObject<HTMLDivElement>}
-          className={`grid grid-cols-1 md:grid-cols-3 gap-8 transition-all duration-1000 ${
-            plansVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
-        >
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {plans.map((plan, index) => (
             <div
-              key={plan.name}
-              className={`relative bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center border-2 hover-lift transition-all duration-500 animate-delay-${index * 200} ${
-                plan.popular 
-                  ? 'border-red-500 scale-105 shadow-xl z-10'
-                  : 'border-gray-100'
+              key={index}
+              className={`relative bg-white rounded-lg shadow-lg border-2 transition-all duration-300 hover:shadow-xl hover-scale ${
+                plan.popular ? 'border-red-500' : 'border-gray-200'
               }`}
             >
               {plan.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center">
-                  <Crown className="w-4 h-4 mr-1" />
-                  Më i kërkuari
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <div className="bg-red-600 text-white px-4 py-2 rounded-full text-sm font-bold flex items-center">
+                    <Star className="w-4 h-4 mr-1" />
+                    Most Popular
+                  </div>
                 </div>
               )}
               
-              <h3 className="text-2xl font-semibold mb-2 text-gray-800">{plan.name}</h3>
-              <div className="text-3xl font-bold text-red-600 mb-2">{plan.price}</div>
-              <p className="text-gray-500 mb-4 text-center">{plan.description}</p>
-              <ul className="mb-6 space-y-2 w-full">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-center text-gray-700">
-                    <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <button
-                className={`mt-auto px-6 py-2 rounded-lg font-semibold shadow hover:scale-105 hover:shadow-2xl transition-all ${
-                  plan.popular
-                    ? 'bg-red-600 text-white hover:bg-red-700'
-                    : 'bg-red-600 text-white hover:bg-red-700'
-                }`}
-                onClick={() => handleJoin(plan)}
-              >
-                Regjistrohu tani
-              </button>
+              <div className="p-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
+                <p className="text-gray-600 mb-6">{plan.description}</p>
+                
+                <div className="mb-6">
+                  <span className="text-4xl font-bold text-gray-900">${plan.price}</span>
+                  <span className="text-gray-600">/{plan.period}</span>
+                </div>
+
+                <ul className="space-y-3 mb-8">
+                  {plan.features.map((feature, featureIndex) => (
+                    <li key={featureIndex} className="flex items-center">
+                      <Check className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                      <span className="text-gray-600">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  onClick={() => handleGetStarted(plan.name, plan.price)}
+                  className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors duration-300 ${
+                    plan.popular
+                      ? 'bg-red-600 text-white hover:bg-red-700'
+                      : 'bg-red-500 text-white hover:bg-red-600'
+                  }`}
+                >
+                  Get Started
+                </button>
+              </div>
             </div>
           ))}
         </div>
 
-        {/* Modal */}
-        {open && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-            <div className="bg-white rounded-xl shadow-xl p-8 max-w-md w-full relative animate-fadeIn border-2 border-red-500/20">
-              <button
-                className="absolute top-3 right-3 text-gray-400 hover:text-red-600 text-2xl"
-                onClick={() => setOpen(false)}
-                aria-label="Close"
-              >
-                &times;
-              </button>
-              <h4 className="text-2xl font-bold mb-2 text-red-600">Faleminderit qe zgjodhet {selectedPlan?.name}!</h4>
-              <p className="text-gray-700 mb-4">
-               Ju lutem paraqituni tek palestra jone per te plotesuar letrat dhe te beheni pjestar aktiv te Angels.Presim me padurim t'ju takojme !
-              </p>
-              <div className="flex justify-center">
-                <button
-                  className="px-5 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 hover:scale-105 transition-colors"
-                  onClick={() => setOpen(false)}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <div className="mt-12 text-center">
+          <p className="text-gray-600 mb-4">
+            Të gjitha anëtarësimet përfshijnë akses në pajisjet dhe ambientet tona moderne
+          </p>
+          <p className="text-sm text-gray-500">
+            Zbatohen kushte dhe rregulla. Kontaktoni për më shumë detaje.
+          </p>
+        </div>
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-foreground">
+              Bashkohuni me planin {selectedPlan}
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Ju lutemi plotësoni të dhënat tuaja për të filluar
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Emri i plotë</Label>
+              <Input
+                id="name"
+                type="text"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder="Shkruani emrin tuaj të plotë"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={customerEmail}
+                onChange={(e) => setCustomerEmail(e.target.value)}
+                placeholder="Shkruani email-in tuaj"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="phone">Numri i telefonit</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                placeholder="Shkruani numrin tuaj të telefonit"
+                required
+              />
+            </div>
+
+            <div className="bg-muted p-4 rounded-lg">
+              <p className="text-sm text-muted-foreground mb-2">
+                <strong>Plani i zgjedhur:</strong> {selectedPlan}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                <strong>Çmimi:</strong> ${selectedPlanPrice}/muaj
+              </p>
+            </div>
+
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsDialogOpen(false)}
+                disabled={isSubmitting}
+                className="border-red-500 text-red-500 hover:bg-red-50"
+              >
+                Anulo
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-red-600 text-white hover:bg-red-700 disabled:bg-red-400"
+              >
+                {isSubmitting ? "Duke dërguar..." : "Dërgo kërkesën"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </section>
   );
-}
+};
+
+export default MembershipPlans;
